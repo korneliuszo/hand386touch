@@ -217,7 +217,7 @@ bool Focus(uint32_t VID, uint32_t flags, uint32_t VM, uint32_t crs)
 }
 
 void Crit_Init(){
-	Out_Debug_String("Hello from gcc\r\n");
+	Out_Debug_String("Hello from touchscreen\r\n");
 }
 
 [[gnu::section(".vxd_control"), gnu::used]]
