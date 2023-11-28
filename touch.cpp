@@ -176,6 +176,11 @@ bool Device_Init(uint32_t cmdtail, uint32_t sysVM, uint32_t crs)
 
 		uint8_t resp[5]={};
 		spi_transfer(resp,5);
+		if(resp[0]!=0x55)
+		{
+			Out_Debug_String("No touchpad?\r\n");
+			return 1;
+		}
 
 		uint8_t buff[8] = {0x55,0x06,0x21,0x00,(uint8_t)(0x0B+resp[4]),0x02,0x01,0x51};
 		spi_transfer(buff,8);
