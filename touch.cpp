@@ -125,7 +125,7 @@ void spi_transfer(uint8_t *buff, int len)
 volatile uint16_t mx,my;
 volatile bool last_clicked;
 
-void timeout()
+bool timeout(uint32_t crs)
 {
 	uint8_t ver[5]={};
 	spi_transfer(ver,5);
@@ -143,8 +143,8 @@ void timeout()
 		mx=(((uint32_t)(x-0x40))*(1084313))>>16;
 		my=-(((uint32_t)(y-0xC0))*(1170609))>>16;
 		if(!last_clicked)
-			mouse.Set_Mouse_Position(mx, my, false);
-		mouse.Set_Mouse_Position(mx, my, clicked);
+			mouse.Set_Mouse_Position(crs, mx, my, false);
+		mouse.Set_Mouse_Position(crs, mx, my, clicked);
 		last_clicked = clicked;
 	}
 	else
@@ -155,10 +155,13 @@ void timeout()
 			Out_Debug_String("Buuu\r\n");
 #endif
 			last_clicked = false;
-			mouse.Set_Mouse_Position(mx, my, false);
+			mouse.Set_Mouse_Position(crs, mx, my, false);
 		}
 	}
-	Set_Global_Time_Out(1, 0, (const void *)timeout);
+	Set_Global_Time_Out(1, 0,
+			(const void *)single_vxd_control_hanlder<
+			timeout,'B'>);
+	return 1;
 }
 
 bool Device_Init(uint32_t cmdtail, uint32_t sysVM, uint32_t crs)
@@ -199,7 +202,10 @@ bool Device_Init(uint32_t cmdtail, uint32_t sysVM, uint32_t crs)
 			Out_Debug_String(str);
 		}
 #endif
-		Set_Global_Time_Out(1, 0, (const void *)timeout);
+		Set_Global_Time_Out(1, 0,
+				(const void *)single_vxd_control_hanlder<
+				timeout,'B'>);
+
 	}
 	return exists;
 }
@@ -213,6 +219,7 @@ bool Focus(uint32_t VID, uint32_t flags, uint32_t VM, uint32_t crs)
 void Crit_Init(){
 	Out_Debug_String("Hello from gcc\r\n");
 }
+
 [[gnu::section(".vxd_control"), gnu::used]]
 static const Control_callback ahndlr =
 		Init_Control_callback
