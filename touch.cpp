@@ -123,7 +123,23 @@ void spi_transfer(uint8_t *buff, int len)
 }
 
 volatile uint16_t mx,my;
-volatile bool last_clicked;
+volatile bool last_clicked,clicked;
+bool timeout(uint32_t crs);
+
+
+void mouse_complete(void* obj)
+{
+	Set_Global_Time_Out(1, 0,
+			(const void *)single_vxd_control_hanlder<
+			timeout,'B'>);
+}
+
+void mouse_secondclick(void* obj)
+{
+	(void)obj;
+	mouse.Set_Mouse_Position({mouse_complete,nullptr}, mx, my, clicked);
+}
+
 
 bool timeout(uint32_t crs)
 {
@@ -137,15 +153,16 @@ bool timeout(uint32_t crs)
 			ver[0],ver[1],ver[2],ver[3],ver[4]);
 		Out_Debug_String(str);
 #endif
-		bool clicked = !!(ver[0]&0x01);
+		clicked = !!(ver[0]&0x01);
 		uint16_t x = ver[1] | (ver[2]<<7);
 		uint16_t y = ver[3] | (ver[4]<<7);
 		mx=(((uint32_t)(x-0x40))*(1084313))>>16;
 		my=-(((uint32_t)(y-0xC0))*(1170609))>>16;
 		if(!last_clicked)
-			mouse.Set_Mouse_Position(crs, mx, my, false);
-		mouse.Set_Mouse_Position(crs, mx, my, clicked);
-		last_clicked = clicked;
+			mouse.Set_Mouse_Position({mouse_secondclick,nullptr}, mx, my, false);
+		else
+			mouse.Set_Mouse_Position({mouse_complete,nullptr}, mx, my, clicked);
+		last_clicked=clicked;
 	}
 	else
 	{
@@ -155,12 +172,15 @@ bool timeout(uint32_t crs)
 			Out_Debug_String("Buuu\r\n");
 #endif
 			last_clicked = false;
-			mouse.Set_Mouse_Position(crs, mx, my, false);
+			mouse.Set_Mouse_Position({mouse_complete,nullptr}, mx, my, false);
+		}
+		else
+		{
+			Set_Global_Time_Out(1, 0,
+					(const void *)single_vxd_control_hanlder<
+					timeout,'B'>);
 		}
 	}
-	Set_Global_Time_Out(1, 0,
-			(const void *)single_vxd_control_hanlder<
-			timeout,'B'>);
 	return 1;
 }
 
