@@ -124,13 +124,13 @@ void spi_transfer(uint8_t *buff, int len)
 
 volatile uint16_t mx,my;
 volatile bool last_clicked,clicked;
-bool timeout(uint32_t crs);
+void timeout(uint32_t crs);
 
 
 void mouse_complete(void* obj)
 {
 	Set_Global_Time_Out(1, 0,
-			(const void *)single_vxd_control_hanlder<
+			(const void *)saved_flags<
 			timeout,'B'>);
 }
 
@@ -141,7 +141,7 @@ void mouse_secondclick(void* obj)
 }
 
 
-bool timeout(uint32_t crs)
+void timeout(uint32_t crs)
 {
 	uint8_t ver[5]={};
 	spi_transfer(ver,5);
@@ -177,11 +177,11 @@ bool timeout(uint32_t crs)
 		else
 		{
 			Set_Global_Time_Out(1, 0,
-					(const void *)single_vxd_control_hanlder<
+					(const void *)saved_flags<
 					timeout,'B'>);
 		}
 	}
-	return 1;
+	return;
 }
 
 bool Device_Init(uint32_t cmdtail, uint32_t sysVM, uint32_t crs)
@@ -228,7 +228,7 @@ bool Device_Init(uint32_t cmdtail, uint32_t sysVM, uint32_t crs)
 		}
 #endif
 		Set_Global_Time_Out(1, 0,
-				(const void *)single_vxd_control_hanlder<
+				(const void *)saved_flags<
 				timeout,'B'>);
 
 	}
